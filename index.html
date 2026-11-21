@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Practice E-Card Studio (Photo Fit & Zoom)</title>
+    <title>Practice E-Card Studio (Borders + Fonts + Photo)</title>
     <style>
         * {
             box-sizing: border-box;
-            font-family: system-ui, -apple-system, sans-serif;
         }
 
         body {
@@ -15,13 +14,14 @@
             padding: 20px;
             background: #0f172a;
             color: #f8fafc;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             display: flex;
             justify-content: center;
         }
 
         .container {
             width: 100%;
-            max-width: 960px;
+            max-width: 980px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
@@ -47,11 +47,22 @@
             color: #e2e8f0;
         }
 
+        .section-title {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px solid #334155;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
         label {
             display: block;
             font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: 12px;
+            color: #cbd5e1;
+            margin-top: 10px;
             margin-bottom: 4px;
         }
 
@@ -69,6 +80,7 @@
             background: #0f172a;
             color: #f8fafc;
             font-size: 0.95rem;
+            font-family: inherit;
         }
 
         input[type="color"] {
@@ -87,17 +99,10 @@
             resize: vertical;
         }
 
-        .hint {
-            font-size: 0.78rem;
-            color: #94a3b8;
-            margin-top: 5px;
-            line-height: 1.35;
-        }
-
         .btn-row {
             display: flex;
             gap: 10px;
-            margin-top: 16px;
+            margin-top: 18px;
         }
 
         button {
@@ -140,7 +145,7 @@
             width: 100%;
             aspect-ratio: 4 / 5;
             border-radius: 20px;
-            padding: 32px 26px;
+            padding: 36px 30px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -151,7 +156,6 @@
             background-color: #1e293b;
         }
 
-        /* Dito natin ilalagay ang image element para sakto ang zoom & fit sa preview at PNG */
         .card-bg-img {
             position: absolute;
             inset: 0;
@@ -169,15 +173,25 @@
             pointer-events: none;
         }
 
+        /* Decorative frame sa loob ng card */
+        .card-frame {
+            position: absolute;
+            inset: 14px;
+            border-radius: 14px;
+            z-index: 2;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
         .card-content {
             position: relative;
-            z-index: 2;
+            z-index: 3;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             color: #ffffff;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
         }
 
         .badge {
@@ -192,6 +206,7 @@
             background: rgba(15, 23, 42, 0.82);
             color: #fef08a;
             text-shadow: none;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         .card-to {
@@ -203,7 +218,7 @@
 
         .card-msg {
             font-size: 1.05rem;
-            line-height: 1.6;
+            line-height: 1.55;
             margin: 18px 0;
             white-space: pre-line;
         }
@@ -229,6 +244,8 @@
                 <option value="thanks">Thank You</option>
             </select>
 
+            <div class="section-title">Background & Photo</div>
+
             <label for="photoInput">Background Picture (Upload mula sa device)</label>
             <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
 
@@ -236,8 +253,8 @@
                 <div>
                     <label for="fitModeInput">Photo Fit Mode</label>
                     <select id="fitModeInput" onchange="renderCard()">
-                        <option value="contain">Fit Whole Photo (Walang putol)</option>
-                        <option value="cover">Fill Full Card (Punuin ang card)</option>
+                        <option value="contain">Fit Whole Photo</option>
+                        <option value="cover">Fill Full Card</option>
                     </select>
                 </div>
                 <div>
@@ -256,6 +273,62 @@
                     <input type="range" id="tintInput" min="0" max="80" value="35" oninput="renderCard()">
                 </div>
             </div>
+
+            <div class="section-title">Card Border / Frame</div>
+
+            <div class="row-2">
+                <div>
+                    <label for="borderStyleInput">Border Style</label>
+                    <select id="borderStyleInput" onchange="renderCard()">
+                        <option value="solid">Classic Solid Frame</option>
+                        <option value="double">Double Royal Frame</option>
+                        <option value="dashed">Stitched / Dashed Frame</option>
+                        <option value="dotted">Dotted Playful Frame</option>
+                        <option value="none">No Border</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="borderColorInput">Border Color</label>
+                    <input type="color" id="borderColorInput" value="#facc15" oninput="renderCard()">
+                </div>
+            </div>
+
+            <label for="borderWidthInput">Border Thickness (<span id="borderWidthVal">4px</span>)</label>
+            <input type="range" id="borderWidthInput" min="1" max="12" value="4" oninput="renderCard()">
+
+            <div class="section-title">Font Style, Color & Size</div>
+
+            <div class="row-2">
+                <div>
+                    <label for="fontTypeInput">Font Type</label>
+                    <select id="fontTypeInput" onchange="renderCard()">
+                        <option value="sans">Clean Modern (Sans)</option>
+                        <option value="serif">Classic Formal (Serif)</option>
+                        <option value="script">Sweet Script (Cursive)</option>
+                        <option value="mono">Typewriter (Mono)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="fontColorInput">Font Color</label>
+                    <input type="color" id="fontColorInput" value="#ffffff" oninput="renderCard()">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label for="fontSizeInput">Font Size (<span id="fontSizeVal">100%</span>)</label>
+                    <input type="range" id="fontSizeInput" min="75" max="140" value="100" oninput="renderCard()">
+                </div>
+                <div>
+                    <label for="shadowToggle">Text Shadow</label>
+                    <select id="shadowToggle" onchange="renderCard()">
+                        <option value="on">On (Mas litaw sa photo)</option>
+                        <option value="off">Off (Malinis / Flat)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-title">Card Message</div>
 
             <label for="toInput">To (Para kanino?)</label>
             <input type="text" id="toInput" placeholder="e.g. Uncle & Auntie" oninput="renderCard()">
@@ -278,7 +351,8 @@
             <div id="cardPreview" class="card">
                 <img id="cardBgImg" class="card-bg-img" alt="" style="display: none;">
                 <div id="cardOverlay" class="card-overlay"></div>
-                <div class="card-content">
+                <div id="cardFrame" class="card-frame"></div>
+                <div id="cardContent" class="card-content">
                     <div>
                         <div id="cardBadge" class="badge">Season's Greetings</div>
                         <div id="cardTo" class="card-to">To: Someone Special</div>
@@ -296,6 +370,25 @@
             holiday: "Season's Greetings",
             thinking: 'Thinking of You',
             thanks: 'Thank You'
+        };
+
+        const fontFamilies = {
+            sans: {
+                css: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                canvas: 'system-ui, -apple-system, "Segoe UI", sans-serif'
+            },
+            serif: {
+                css: 'Georgia, "Times New Roman", Times, serif',
+                canvas: 'Georgia, "Times New Roman", serif'
+            },
+            script: {
+                css: '"Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive',
+                canvas: '"Brush Script MT", "Segoe Script", cursive'
+            },
+            mono: {
+                css: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                canvas: 'monospace'
+            }
         };
 
         let uploadedImg = null;
@@ -322,16 +415,33 @@
             const bgColor = document.getElementById('bgColorInput').value;
             const zoom = parseInt(document.getElementById('zoomInput').value, 10) || 100;
             const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
+
+            const borderStyle = document.getElementById('borderStyleInput').value;
+            const borderColor = document.getElementById('borderColorInput').value;
+            const borderWidth = parseInt(document.getElementById('borderWidthInput').value, 10) || 0;
+
+            const fontType = document.getElementById('fontTypeInput').value;
+            const fontColor = document.getElementById('fontColorInput').value;
+            const fontSizePct = parseInt(document.getElementById('fontSizeInput').value, 10) || 100;
+            const shadowMode = document.getElementById('shadowToggle').value;
+
             const toVal = document.getElementById('toInput').value.trim();
             const msgVal = document.getElementById('msgInput').value.trim();
             const fromVal = document.getElementById('fromInput').value.trim();
 
             document.getElementById('zoomVal').innerText = `${zoom}%`;
             document.getElementById('tintVal').innerText = `${tint}%`;
+            document.getElementById('borderWidthVal').innerText = `${borderWidth}px`;
+            document.getElementById('fontSizeVal').innerText = `${fontSizePct}%`;
 
             const card = document.getElementById('cardPreview');
             const bgImg = document.getElementById('cardBgImg');
             const overlay = document.getElementById('cardOverlay');
+            const frame = document.getElementById('cardFrame');
+            const content = document.getElementById('cardContent');
+            const toEl = document.getElementById('cardTo');
+            const msgEl = document.getElementById('cardMsg');
+            const fromEl = document.getElementById('cardFrom');
 
             card.style.backgroundColor = bgColor;
             card.style.backgroundImage = 'none';
@@ -339,7 +449,7 @@
             if (uploadedImg) {
                 bgImg.src = uploadedImg.src;
                 bgImg.style.display = 'block';
-                bgImg.style.objectFit = fitMode; // 'contain' o 'cover'
+                bgImg.style.objectFit = fitMode;
                 bgImg.style.objectPosition = 'center center';
                 bgImg.style.transform = `scale(${zoom / 100})`;
             } else {
@@ -349,10 +459,32 @@
 
             overlay.style.background = `rgba(15, 23, 42, ${tint / 100})`;
 
+            // Border styling sa frame
+            if (borderStyle === 'none' || borderWidth <= 0) {
+                frame.style.border = 'none';
+                frame.style.boxShadow = 'none';
+            } else {
+                // Sa CSS 'double', kailangan kahit papaano may 3px+ para klaro ang dalawang linya
+                const effectiveWidth = borderStyle === 'double' ? Math.max(borderWidth, 4) : borderWidth;
+                frame.style.border = `${effectiveWidth}px ${borderStyle} ${borderColor}`;
+                frame.style.boxShadow = `0 0 12px rgba(0, 0, 0, 0.35)`;
+            }
+
+            // Font styling
+            const chosenFont = fontFamilies[fontType] || fontFamilies.sans;
+            content.style.fontFamily = chosenFont.css;
+            content.style.color = fontColor;
+            content.style.textShadow = shadowMode === 'on' ? '0 2px 10px rgba(0, 0, 0, 0.78)' : 'none';
+
+            const scale = fontSizePct / 100;
+            toEl.style.fontSize = `${(1.5 * scale).toFixed(2)}rem`;
+            msgEl.style.fontSize = `${(1.05 * scale).toFixed(2)}rem`;
+            fromEl.style.fontSize = `${(0.95 * scale).toFixed(2)}rem`;
+
             document.getElementById('cardBadge').innerText = themeLabels[theme] || 'Greeting Card';
-            document.getElementById('cardTo').innerText = toVal ? `To: ${toVal}` : 'To: Someone Special';
-            document.getElementById('cardMsg').innerText = msgVal || 'Your message goes here...';
-            document.getElementById('cardFrom').innerText = fromVal ? `From: ${fromVal}` : 'From: Your Family';
+            toEl.innerText = toVal ? `To: ${toVal}` : 'To: Someone Special';
+            msgEl.innerText = msgVal || 'Your message goes here...';
+            fromEl.innerText = fromVal ? `From: ${fromVal}` : 'From: Your Family';
         }
 
         function resetCard() {
@@ -363,6 +495,13 @@
             document.getElementById('bgColorInput').value = '#8c7344';
             document.getElementById('zoomInput').value = 100;
             document.getElementById('tintInput').value = 35;
+            document.getElementById('borderStyleInput').value = 'solid';
+            document.getElementById('borderColorInput').value = '#facc15';
+            document.getElementById('borderWidthInput').value = 4;
+            document.getElementById('fontTypeInput').value = 'sans';
+            document.getElementById('fontColorInput').value = '#ffffff';
+            document.getElementById('fontSizeInput').value = 100;
+            document.getElementById('shadowToggle').value = 'on';
             document.getElementById('toInput').value = '';
             document.getElementById('msgInput').value = 'Wishing you warmth, good health, and plenty of smiles today and always.';
             document.getElementById('fromInput').value = '';
@@ -393,12 +532,80 @@
             });
         }
 
+        function drawCanvasBorder(ctx, width, height, style, color, thicknessPx) {
+            if (style === 'none' || thicknessPx <= 0) return;
+
+            // I-scale nang proporsyonal para sa 800x1000 canvas
+            const w = Math.max(2, Math.round(thicknessPx * 2.2));
+            const inset = 28;
+            const rectW = width - inset * 2;
+            const rectH = height - inset * 2;
+            const radius = 24;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+            ctx.shadowBlur = 8;
+
+            function drawRoundedRectPath(x, y, rw, rh, r) {
+                ctx.beginPath();
+                ctx.roundRect(x, y, rw, rh, r);
+            }
+
+            if (style === 'solid') {
+                ctx.lineWidth = w;
+                ctx.setLineDash([]);
+                drawRoundedRectPath(inset, inset, rectW, rectH, radius);
+                ctx.stroke();
+            } else if (style === 'dashed') {
+                ctx.lineWidth = w;
+                ctx.setLineDash([w * 3.5, w * 2.2]);
+                drawRoundedRectPath(inset, inset, rectW, rectH, radius);
+                ctx.stroke();
+            } else if (style === 'dotted') {
+                ctx.lineWidth = w;
+                ctx.lineCap = 'round';
+                ctx.setLineDash([1, w * 2.4]);
+                drawRoundedRectPath(inset, inset, rectW, rectH, radius);
+                ctx.stroke();
+            } else if (style === 'double') {
+                const outerW = Math.max(2, Math.round(w * 0.45));
+                const gap = Math.max(8, Math.round(w * 0.65));
+                ctx.lineWidth = outerW;
+                ctx.setLineDash([]);
+
+                drawRoundedRectPath(inset, inset, rectW, rectH, radius);
+                ctx.stroke();
+
+                drawRoundedRectPath(
+                    inset + gap,
+                    inset + gap,
+                    rectW - gap * 2,
+                    rectH - gap * 2,
+                    Math.max(8, radius - gap / 2)
+                );
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
         function downloadCardPNG() {
             const theme = document.getElementById('themeInput').value;
             const fitMode = document.getElementById('fitModeInput').value;
             const bgColor = document.getElementById('bgColorInput').value;
             const zoom = (parseInt(document.getElementById('zoomInput').value, 10) || 100) / 100;
             const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
+
+            const borderStyle = document.getElementById('borderStyleInput').value;
+            const borderColor = document.getElementById('borderColorInput').value;
+            const borderWidth = parseInt(document.getElementById('borderWidthInput').value, 10) || 0;
+
+            const fontType = document.getElementById('fontTypeInput').value;
+            const fontColor = document.getElementById('fontColorInput').value;
+            const fontScale = (parseInt(document.getElementById('fontSizeInput').value, 10) || 100) / 100;
+            const shadowMode = document.getElementById('shadowToggle').value;
+
             const toVal = document.getElementById('toInput').value.trim() || 'Someone Special';
             const msgVal = document.getElementById('msgInput').value.trim() || 'Your message goes here...';
             const fromVal = document.getElementById('fromInput').value.trim() || 'Your Family';
@@ -413,7 +620,7 @@
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Photo with Fit Mode ('contain' vs 'cover') + Zoom
+            // 2. Photo with Fit Mode + Zoom
             if (uploadedImg) {
                 const imgRatio = uploadedImg.width / uploadedImg.height;
                 const canvasRatio = canvas.width / canvas.height;
@@ -428,7 +635,6 @@
                         baseH = baseW / imgRatio;
                     }
                 } else {
-                    // 'contain' -> buong picture makikita sa loob ng canvas
                     if (imgRatio > canvasRatio) {
                         baseW = canvas.width;
                         baseH = baseW / imgRatio;
@@ -450,30 +656,45 @@
             ctx.fillStyle = `rgba(15, 23, 42, ${tint / 100})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 4. Badge
+            // 4. Card Border
+            drawCanvasBorder(ctx, canvas.width, canvas.height, borderStyle, borderColor, borderWidth);
+
+            // 5. Badge
             ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
             ctx.beginPath();
-            ctx.roundRect(220, 90, 360, 56, 28);
+            ctx.roundRect(220, 95, 360, 56, 28);
             ctx.fill();
 
             ctx.fillStyle = '#fef08a';
             ctx.font = 'bold 24px system-ui, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(badgeText.toUpperCase(), 400, 118);
+            ctx.fillText(badgeText.toUpperCase(), 400, 123);
 
-            // 5. Text
-            ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 10;
+            // 6. Text with chosen Font Type, Color, Size & Shadow
+            const chosenFont = (fontFamilies[fontType] || fontFamilies.sans).canvas;
+            ctx.fillStyle = fontColor;
 
-            ctx.font = 'bold 42px system-ui, sans-serif';
-            ctx.fillText(`To: ${toVal}`, 400, 240);
+            if (shadowMode === 'on') {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.78)';
+                ctx.shadowBlur = 10;
+            } else {
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            }
 
-            ctx.font = '500 32px system-ui, sans-serif';
-            wrapText(ctx, msgVal, 400, 390, 640, 48);
+            const toSize = Math.round(42 * fontScale);
+            const msgSize = Math.round(32 * fontScale);
+            const fromSize = Math.round(28 * fontScale);
+            const lineHeight = Math.round(48 * fontScale);
 
-            ctx.font = '600 28px system-ui, sans-serif';
+            ctx.font = `bold ${toSize}px ${chosenFont}`;
+            ctx.fillText(`To: ${toVal}`, 400, 245);
+
+            ctx.font = `500 ${msgSize}px ${chosenFont}`;
+            wrapText(ctx, msgVal, 400, 390, 620, lineHeight);
+
+            ctx.font = `600 ${fromSize}px ${chosenFont}`;
             ctx.fillText(`From: ${fromVal}`, 400, 860);
 
             const link = document.createElement('a');
