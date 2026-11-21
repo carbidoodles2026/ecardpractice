@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Practice E-Card Studio (Photo Background)</title>
+    <title>Practice E-Card Studio (Photo Fit & Zoom)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -21,7 +21,7 @@
 
         .container {
             width: 100%;
-            max-width: 940px;
+            max-width: 960px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
@@ -55,6 +55,12 @@
             margin-bottom: 4px;
         }
 
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
         input, select, textarea {
             width: 100%;
             padding: 10px 12px;
@@ -65,21 +71,27 @@
             font-size: 0.95rem;
         }
 
+        input[type="color"] {
+            padding: 4px;
+            height: 42px;
+            cursor: pointer;
+        }
+
         input[type="file"] {
             padding: 8px;
             font-size: 0.85rem;
         }
 
         textarea {
-            min-height: 95px;
+            min-height: 90px;
             resize: vertical;
         }
 
         .hint {
             font-size: 0.78rem;
             color: #94a3b8;
-            margin-top: 6px;
-            line-height: 1.4;
+            margin-top: 5px;
+            line-height: 1.35;
         }
 
         .btn-row {
@@ -117,7 +129,7 @@
             background: #475569;
         }
 
-        /* Card Preview */
+        /* Preview Card */
         .preview-wrap {
             display: flex;
             flex-direction: column;
@@ -136,16 +148,25 @@
             box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
             position: relative;
             overflow: hidden;
-            background-size: cover;
-            background-position: center;
+            background-color: #1e293b;
         }
 
-        /* Manipis na patong sa ibabaw ng picture para mabasa nang malinaw ang text */
+        /* Dito natin ilalagay ang image element para sakto ang zoom & fit sa preview at PNG */
+        .card-bg-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            transform-origin: center center;
+        }
+
         .card-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(15, 23, 42, 0.45);
             z-index: 1;
+            pointer-events: none;
         }
 
         .card-content {
@@ -156,7 +177,7 @@
             flex-direction: column;
             justify-content: space-between;
             color: #ffffff;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
         }
 
         .badge {
@@ -168,7 +189,7 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             margin: 0 auto;
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.82);
             color: #fef08a;
             text-shadow: none;
         }
@@ -210,11 +231,31 @@
 
             <label for="photoInput">Background Picture (Upload mula sa device)</label>
             <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
-            <div class="hint">Tip: Pumili ng malinaw na photo (JPG/PNG). May dark tint na nakapatong para hindi malabo ang sulat.</div>
 
-            <label for="tintInput">Dilim ng Patong / Tint (0% hanggang 80%)</label>
-            <input type="range" id="tintInput" min="0" max="80" value="45" oninput="renderCard()">
-            <div class="hint">Current tint: <span id="tintValue">45%</span></div>
+            <div class="row-2">
+                <div>
+                    <label for="fitModeInput">Photo Fit Mode</label>
+                    <select id="fitModeInput" onchange="renderCard()">
+                        <option value="contain">Fit Whole Photo (Walang putol)</option>
+                        <option value="cover">Fill Full Card (Punuin ang card)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="bgColorInput">Card Base Color</label>
+                    <input type="color" id="bgColorInput" value="#8c7344" oninput="renderCard()">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label for="zoomInput">Photo Zoom (<span id="zoomVal">100%</span>)</label>
+                    <input type="range" id="zoomInput" min="80" max="160" value="100" oninput="renderCard()">
+                </div>
+                <div>
+                    <label for="tintInput">Dark Tint (<span id="tintVal">35%</span>)</label>
+                    <input type="range" id="tintInput" min="0" max="80" value="35" oninput="renderCard()">
+                </div>
+            </div>
 
             <label for="toInput">To (Para kanino?)</label>
             <input type="text" id="toInput" placeholder="e.g. Uncle & Auntie" oninput="renderCard()">
@@ -235,10 +276,11 @@
         <div class="panel preview-wrap">
             <h2>Live Preview</h2>
             <div id="cardPreview" class="card">
+                <img id="cardBgImg" class="card-bg-img" alt="" style="display: none;">
                 <div id="cardOverlay" class="card-overlay"></div>
                 <div class="card-content">
                     <div>
-                        <div id="cardBadge" class="badge">Happy Birthday</div>
+                        <div id="cardBadge" class="badge">Season's Greetings</div>
                         <div id="cardTo" class="card-to">To: Someone Special</div>
                     </div>
                     <div id="cardMsg" class="card-msg">Wishing you warmth, good health, and plenty of smiles today and always.</div>
@@ -256,9 +298,8 @@
             thanks: 'Thank You'
         };
 
-        let uploadedImg = null; // Dito natin itatago ang na-upload na Image object
+        let uploadedImg = null;
 
-        // Kapag pumili ng picture ang user mula sa device
         function handlePhotoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -277,22 +318,33 @@
 
         function renderCard() {
             const theme = document.getElementById('themeInput').value;
+            const fitMode = document.getElementById('fitModeInput').value;
+            const bgColor = document.getElementById('bgColorInput').value;
+            const zoom = parseInt(document.getElementById('zoomInput').value, 10) || 100;
+            const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
             const toVal = document.getElementById('toInput').value.trim();
             const msgVal = document.getElementById('msgInput').value.trim();
             const fromVal = document.getElementById('fromInput').value.trim();
-            const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
 
-            document.getElementById('tintValue').innerText = `${tint}%`;
+            document.getElementById('zoomVal').innerText = `${zoom}%`;
+            document.getElementById('tintVal').innerText = `${tint}%`;
 
             const card = document.getElementById('cardPreview');
+            const bgImg = document.getElementById('cardBgImg');
             const overlay = document.getElementById('cardOverlay');
 
+            card.style.backgroundColor = bgColor;
+            card.style.backgroundImage = 'none';
+
             if (uploadedImg) {
-                card.style.backgroundImage = `url('${uploadedImg.src}')`;
-                card.style.backgroundColor = '#1e293b';
+                bgImg.src = uploadedImg.src;
+                bgImg.style.display = 'block';
+                bgImg.style.objectFit = fitMode; // 'contain' o 'cover'
+                bgImg.style.objectPosition = 'center center';
+                bgImg.style.transform = `scale(${zoom / 100})`;
             } else {
-                card.style.backgroundImage = 'none';
-                card.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #7e22ce 100%)';
+                bgImg.style.display = 'none';
+                card.style.background = `linear-gradient(135deg, ${bgColor} 0%, #1e293b 100%)`;
             }
 
             overlay.style.background = `rgba(15, 23, 42, ${tint / 100})`;
@@ -307,7 +359,10 @@
             uploadedImg = null;
             document.getElementById('photoInput').value = '';
             document.getElementById('themeInput').value = 'birthday';
-            document.getElementById('tintInput').value = 45;
+            document.getElementById('fitModeInput').value = 'contain';
+            document.getElementById('bgColorInput').value = '#8c7344';
+            document.getElementById('zoomInput').value = 100;
+            document.getElementById('tintInput').value = 35;
             document.getElementById('toInput').value = '';
             document.getElementById('msgInput').value = 'Wishing you warmth, good health, and plenty of smiles today and always.';
             document.getElementById('fromInput').value = '';
@@ -340,10 +395,13 @@
 
         function downloadCardPNG() {
             const theme = document.getElementById('themeInput').value;
+            const fitMode = document.getElementById('fitModeInput').value;
+            const bgColor = document.getElementById('bgColorInput').value;
+            const zoom = (parseInt(document.getElementById('zoomInput').value, 10) || 100) / 100;
+            const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
             const toVal = document.getElementById('toInput').value.trim() || 'Someone Special';
             const msgVal = document.getElementById('msgInput').value.trim() || 'Your message goes here...';
             const fromVal = document.getElementById('fromInput').value.trim() || 'Your Family';
-            const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
             const badgeText = themeLabels[theme] || 'Greeting Card';
 
             const canvas = document.createElement('canvas');
@@ -351,38 +409,48 @@
             canvas.height = 1000;
             const ctx = canvas.getContext('2d');
 
-            // 1. Iguhit ang background (picture kung meron, kung wala ay gradient)
+            // 1. Base color
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Photo with Fit Mode ('contain' vs 'cover') + Zoom
             if (uploadedImg) {
-                // Parang "background-size: cover" para hindi ma-stretch nang pangit ang picture
                 const imgRatio = uploadedImg.width / uploadedImg.height;
                 const canvasRatio = canvas.width / canvas.height;
-                let drawW, drawH, offsetX, offsetY;
+                let baseW, baseH;
 
-                if (imgRatio > canvasRatio) {
-                    drawH = canvas.height;
-                    drawW = imgRatio * drawH;
-                    offsetX = (canvas.width - drawW) / 2;
-                    offsetY = 0;
+                if (fitMode === 'cover') {
+                    if (imgRatio > canvasRatio) {
+                        baseH = canvas.height;
+                        baseW = imgRatio * baseH;
+                    } else {
+                        baseW = canvas.width;
+                        baseH = baseW / imgRatio;
+                    }
                 } else {
-                    drawW = canvas.width;
-                    drawH = drawW / imgRatio;
-                    offsetX = 0;
-                    offsetY = (canvas.height - drawH) / 2;
+                    // 'contain' -> buong picture makikita sa loob ng canvas
+                    if (imgRatio > canvasRatio) {
+                        baseW = canvas.width;
+                        baseH = baseW / imgRatio;
+                    } else {
+                        baseH = canvas.height;
+                        baseW = imgRatio * baseH;
+                    }
                 }
+
+                const drawW = baseW * zoom;
+                const drawH = baseH * zoom;
+                const offsetX = (canvas.width - drawW) / 2;
+                const offsetY = (canvas.height - drawH) / 2;
+
                 ctx.drawImage(uploadedImg, offsetX, offsetY, drawW, drawH);
-            } else {
-                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                grad.addColorStop(0, '#1d4ed8');
-                grad.addColorStop(1, '#7e22ce');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // 2. Dark overlay tint para litaw ang text
+            // 3. Dark tint overlay
             ctx.fillStyle = `rgba(15, 23, 42, ${tint / 100})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 3. Badge box
+            // 4. Badge
             ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
             ctx.beginPath();
             ctx.roundRect(220, 90, 360, 56, 28);
@@ -394,9 +462,9 @@
             ctx.textBaseline = 'middle';
             ctx.fillText(badgeText.toUpperCase(), 400, 118);
 
-            // 4. Text sa ibabaw
+            // 5. Text
             ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
             ctx.shadowBlur = 10;
 
             ctx.font = 'bold 42px system-ui, sans-serif';
@@ -414,7 +482,6 @@
             link.click();
         }
 
-        // Unang render pagbukas
         renderCard();
     </script>
 </body>
