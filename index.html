@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Practice E-Card Studio</title>
+    <title>Practice E-Card Studio (Photo Background)</title>
     <style>
-        /* 1. PINTURA AT LAYOUT (CSS) */
         * {
             box-sizing: border-box;
             font-family: system-ui, -apple-system, sans-serif;
@@ -22,14 +21,13 @@
 
         .container {
             width: 100%;
-            max-width: 920px;
+            max-width: 940px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
             align-items: start;
         }
 
-        /* Sa maliit na screen (tulad ng phone), magiging isang column na lang */
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
@@ -67,9 +65,21 @@
             font-size: 0.95rem;
         }
 
+        input[type="file"] {
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
         textarea {
-            min-height: 100px;
+            min-height: 95px;
             resize: vertical;
+        }
+
+        .hint {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 6px;
+            line-height: 1.4;
         }
 
         .btn-row {
@@ -107,7 +117,7 @@
             background: #475569;
         }
 
-        /* Preview Card */
+        /* Card Preview */
         .preview-wrap {
             display: flex;
             flex-direction: column;
@@ -124,7 +134,29 @@
             justify-content: space-between;
             text-align: center;
             box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
-            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Manipis na patong sa ibabaw ng picture para mabasa nang malinaw ang text */
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 1;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
         }
 
         .badge {
@@ -136,6 +168,9 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             margin: 0 auto;
+            background: rgba(15, 23, 42, 0.8);
+            color: #fef08a;
+            text-shadow: none;
         }
 
         .card-to {
@@ -155,49 +190,31 @@
         .card-from {
             font-size: 0.95rem;
             font-weight: 600;
-            opacity: 0.9;
+            opacity: 0.95;
         }
-
-        /* Mga Kulay / Theme */
-        .theme-birthday {
-            background: linear-gradient(135deg, #fef08a 0%, #f97316 100%);
-            color: #1c1917;
-        }
-        .theme-birthday .badge { background: #1c1917; color: #fef08a; }
-
-        .theme-holiday {
-            background: linear-gradient(135deg, #14532d 0%, #991b1b 100%);
-            color: #fefce8;
-        }
-        .theme-holiday .badge { background: #fef08a; color: #14532d; }
-
-        .theme-thinking {
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #ddd6fe 100%);
-            color: #1e293b;
-        }
-        .theme-thinking .badge { background: #2563eb; color: #ffffff; }
-
-        .theme-thanks {
-            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
-            color: #4a044e;
-        }
-        .theme-thanks .badge { background: #831843; color: #fdf2f8; }
     </style>
 </head>
 <body>
-    <!-- 2. ANG MGA BAGAY NA NAKIKITA SA SCREEN (HTML) -->
     <div class="container">
-        <!-- Kaliwa: Dito mag-e-edit -->
+        <!-- Kaliwa: Controls -->
         <div class="panel">
             <h2>Customize E-Card</h2>
 
-            <label for="themeInput">Occasion / Theme</label>
+            <label for="themeInput">Occasion / Badge</label>
             <select id="themeInput" onchange="renderCard()">
                 <option value="birthday">Happy Birthday</option>
                 <option value="holiday">Holiday / Season's Greetings</option>
                 <option value="thinking">Thinking of You</option>
                 <option value="thanks">Thank You</option>
             </select>
+
+            <label for="photoInput">Background Picture (Upload mula sa device)</label>
+            <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
+            <div class="hint">Tip: Pumili ng malinaw na photo (JPG/PNG). May dark tint na nakapatong para hindi malabo ang sulat.</div>
+
+            <label for="tintInput">Dilim ng Patong / Tint (0% hanggang 80%)</label>
+            <input type="range" id="tintInput" min="0" max="80" value="45" oninput="renderCard()">
+            <div class="hint">Current tint: <span id="tintValue">45%</span></div>
 
             <label for="toInput">To (Para kanino?)</label>
             <input type="text" id="toInput" placeholder="e.g. Uncle & Auntie" oninput="renderCard()">
@@ -214,22 +231,24 @@
             </div>
         </div>
 
-        <!-- Kanan: Live preview ng card -->
+        <!-- Kanan: Live Preview -->
         <div class="panel preview-wrap">
             <h2>Live Preview</h2>
-            <div id="cardPreview" class="card theme-birthday">
-                <div>
-                    <div id="cardBadge" class="badge">Happy Birthday</div>
-                    <div id="cardTo" class="card-to">To: Someone Special</div>
+            <div id="cardPreview" class="card">
+                <div id="cardOverlay" class="card-overlay"></div>
+                <div class="card-content">
+                    <div>
+                        <div id="cardBadge" class="badge">Happy Birthday</div>
+                        <div id="cardTo" class="card-to">To: Someone Special</div>
+                    </div>
+                    <div id="cardMsg" class="card-msg">Wishing you warmth, good health, and plenty of smiles today and always.</div>
+                    <div id="cardFrom" class="card-from">From: Your Family</div>
                 </div>
-                <div id="cardMsg" class="card-msg">Wishing you warmth, good health, and plenty of smiles today and always.</div>
-                <div id="cardFrom" class="card-from">From: Your Family</div>
             </div>
         </div>
     </div>
 
     <script>
-        // 3. ANG UTAK / LOGIC (JAVASCRIPT)
         const themeLabels = {
             birthday: 'Happy Birthday',
             holiday: "Season's Greetings",
@@ -237,22 +256,46 @@
             thanks: 'Thank You'
         };
 
-        const palettes = {
-            birthday: { bg1: '#fef08a', bg2: '#f97316', text: '#1c1917', pillBg: '#1c1917', pillText: '#fef08a' },
-            holiday:  { bg1: '#14532d', bg2: '#991b1b', text: '#fefce8', pillBg: '#fef08a', pillText: '#14532d' },
-            thinking: { bg1: '#e0f2fe', bg2: '#ddd6fe', text: '#1e293b', pillBg: '#2563eb', pillText: '#ffffff' },
-            thanks:   { bg1: '#fce7f3', bg2: '#fbcfe8', text: '#4a044e', pillBg: '#831843', pillText: '#fdf2f8' }
-        };
+        let uploadedImg = null; // Dito natin itatago ang na-upload na Image object
 
-        // Ina-update ang preview card habang may binabago ka
+        // Kapag pumili ng picture ang user mula sa device
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    uploadedImg = img;
+                    renderCard();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         function renderCard() {
             const theme = document.getElementById('themeInput').value;
             const toVal = document.getElementById('toInput').value.trim();
             const msgVal = document.getElementById('msgInput').value.trim();
             const fromVal = document.getElementById('fromInput').value.trim();
+            const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
+
+            document.getElementById('tintValue').innerText = `${tint}%`;
 
             const card = document.getElementById('cardPreview');
-            card.className = `card theme-${theme}`;
+            const overlay = document.getElementById('cardOverlay');
+
+            if (uploadedImg) {
+                card.style.backgroundImage = `url('${uploadedImg.src}')`;
+                card.style.backgroundColor = '#1e293b';
+            } else {
+                card.style.backgroundImage = 'none';
+                card.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #7e22ce 100%)';
+            }
+
+            overlay.style.background = `rgba(15, 23, 42, ${tint / 100})`;
 
             document.getElementById('cardBadge').innerText = themeLabels[theme] || 'Greeting Card';
             document.getElementById('cardTo').innerText = toVal ? `To: ${toVal}` : 'To: Someone Special';
@@ -260,16 +303,17 @@
             document.getElementById('cardFrom').innerText = fromVal ? `From: ${fromVal}` : 'From: Your Family';
         }
 
-        // Binabalik sa simula ang mga input
         function resetCard() {
+            uploadedImg = null;
+            document.getElementById('photoInput').value = '';
             document.getElementById('themeInput').value = 'birthday';
+            document.getElementById('tintInput').value = 45;
             document.getElementById('toInput').value = '';
             document.getElementById('msgInput').value = 'Wishing you warmth, good health, and plenty of smiles today and always.';
             document.getElementById('fromInput').value = '';
             renderCard();
         }
 
-        // Tumutulong mag-wrap ng mahabang text para hindi lumampas sa gilid ng PNG image
         function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
             const paragraphs = text.split('\n');
             let currentY = y;
@@ -294,58 +338,84 @@
             });
         }
 
-        // Gumagawa at nagda-download ng PNG file
         function downloadCardPNG() {
             const theme = document.getElementById('themeInput').value;
             const toVal = document.getElementById('toInput').value.trim() || 'Someone Special';
             const msgVal = document.getElementById('msgInput').value.trim() || 'Your message goes here...';
             const fromVal = document.getElementById('fromInput').value.trim() || 'Your Family';
+            const tint = parseInt(document.getElementById('tintInput').value, 10) || 0;
             const badgeText = themeLabels[theme] || 'Greeting Card';
-            const pal = palettes[theme] || palettes.birthday;
 
             const canvas = document.createElement('canvas');
             canvas.width = 800;
             canvas.height = 1000;
             const ctx = canvas.getContext('2d');
 
-            // Background gradient
-            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            grad.addColorStop(0, pal.bg1);
-            grad.addColorStop(1, pal.bg2);
-            ctx.fillStyle = grad;
+            // 1. Iguhit ang background (picture kung meron, kung wala ay gradient)
+            if (uploadedImg) {
+                // Parang "background-size: cover" para hindi ma-stretch nang pangit ang picture
+                const imgRatio = uploadedImg.width / uploadedImg.height;
+                const canvasRatio = canvas.width / canvas.height;
+                let drawW, drawH, offsetX, offsetY;
+
+                if (imgRatio > canvasRatio) {
+                    drawH = canvas.height;
+                    drawW = imgRatio * drawH;
+                    offsetX = (canvas.width - drawW) / 2;
+                    offsetY = 0;
+                } else {
+                    drawW = canvas.width;
+                    drawH = drawW / imgRatio;
+                    offsetX = 0;
+                    offsetY = (canvas.height - drawH) / 2;
+                }
+                ctx.drawImage(uploadedImg, offsetX, offsetY, drawW, drawH);
+            } else {
+                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                grad.addColorStop(0, '#1d4ed8');
+                grad.addColorStop(1, '#7e22ce');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 2. Dark overlay tint para litaw ang text
+            ctx.fillStyle = `rgba(15, 23, 42, ${tint / 100})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Badge box sa taas
-            ctx.fillStyle = pal.pillBg;
+            // 3. Badge box
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
             ctx.beginPath();
             ctx.roundRect(220, 90, 360, 56, 28);
             ctx.fill();
 
-            ctx.fillStyle = pal.pillText;
+            ctx.fillStyle = '#fef08a';
             ctx.font = 'bold 24px system-ui, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(badgeText.toUpperCase(), 400, 118);
 
-            // "To" text
-            ctx.fillStyle = pal.text;
+            // 4. Text sa ibabaw
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+            ctx.shadowBlur = 10;
+
             ctx.font = 'bold 42px system-ui, sans-serif';
             ctx.fillText(`To: ${toVal}`, 400, 240);
 
-            // Message text sa gitna
             ctx.font = '500 32px system-ui, sans-serif';
             wrapText(ctx, msgVal, 400, 390, 640, 48);
 
-            // "From" text sa ibaba
             ctx.font = '600 28px system-ui, sans-serif';
             ctx.fillText(`From: ${fromVal}`, 400, 860);
 
-            // Trigger download
             const link = document.createElement('a');
             link.download = `ecard-${theme}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         }
+
+        // Unang render pagbukas
+        renderCard();
     </script>
 </body>
 </html>
