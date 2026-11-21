@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice E-Card Studio</title>
+    <style>
+        /* 1. PINTURA AT LAYOUT (CSS) */
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 920px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Sa maliit na screen (tulad ng phone), magiging isang column na lang */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+        }
+
+        h2 {
+            margin: 0 0 14px 0;
+            font-size: 1.15rem;
+            color: #e2e8f0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #f8fafc;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #22c55e;
+            color: #052e16;
+        }
+
+        .btn-primary:hover {
+            background: #16a34a;
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #f8fafc;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        /* Preview Card */
+        .preview-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            border-radius: 20px;
+            padding: 32px 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+            transition: all 0.25s ease;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin: 0 auto;
+        }
+
+        .card-to {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-top: 14px;
+            line-height: 1.25;
+        }
+
+        .card-msg {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 18px 0;
+            white-space: pre-line;
+        }
+
+        .card-from {
+            font-size: 0.95rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* Mga Kulay / Theme */
+        .theme-birthday {
+            background: linear-gradient(135deg, #fef08a 0%, #f97316 100%);
+            color: #1c1917;
+        }
+        .theme-birthday .badge { background: #1c1917; color: #fef08a; }
+
+        .theme-holiday {
+            background: linear-gradient(135deg, #14532d 0%, #991b1b 100%);
+            color: #fefce8;
+        }
+        .theme-holiday .badge { background: #fef08a; color: #14532d; }
+
+        .theme-thinking {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #ddd6fe 100%);
+            color: #1e293b;
+        }
+        .theme-thinking .badge { background: #2563eb; color: #ffffff; }
+
+        .theme-thanks {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+            color: #4a044e;
+        }
+        .theme-thanks .badge { background: #831843; color: #fdf2f8; }
+    </style>
+</head>
+<body>
+    <!-- 2. ANG MGA BAGAY NA NAKIKITA SA SCREEN (HTML) -->
+    <div class="container">
+        <!-- Kaliwa: Dito mag-e-edit -->
+        <div class="panel">
+            <h2>Customize E-Card</h2>
+
+            <label for="themeInput">Occasion / Theme</label>
+            <select id="themeInput" onchange="renderCard()">
+                <option value="birthday">Happy Birthday</option>
+                <option value="holiday">Holiday / Season's Greetings</option>
+                <option value="thinking">Thinking of You</option>
+                <option value="thanks">Thank You</option>
+            </select>
+
+            <label for="toInput">To (Para kanino?)</label>
+            <input type="text" id="toInput" placeholder="e.g. Uncle & Auntie" oninput="renderCard()">
+
+            <label for="msgInput">Personalized Message</label>
+            <textarea id="msgInput" oninput="renderCard()">Wishing you warmth, good health, and plenty of smiles today and always.</textarea>
+
+            <label for="fromInput">From (Galing kanino?)</label>
+            <input type="text" id="fromInput" placeholder="e.g. With love" oninput="renderCard()">
+
+            <div class="btn-row">
+                <button class="btn-primary" onclick="downloadCardPNG()">Download PNG</button>
+                <button class="btn-secondary" onclick="resetCard()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Kanan: Live preview ng card -->
+        <div class="panel preview-wrap">
+            <h2>Live Preview</h2>
+            <div id="cardPreview" class="card theme-birthday">
+                <div>
+                    <div id="cardBadge" class="badge">Happy Birthday</div>
+                    <div id="cardTo" class="card-to">To: Someone Special</div>
+                </div>
+                <div id="cardMsg" class="card-msg">Wishing you warmth, good health, and plenty of smiles today and always.</div>
+                <div id="cardFrom" class="card-from">From: Your Family</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 3. ANG UTAK / LOGIC (JAVASCRIPT)
+        const themeLabels = {
+            birthday: 'Happy Birthday',
+            holiday: "Season's Greetings",
+            thinking: 'Thinking of You',
+            thanks: 'Thank You'
+        };
+
+        const palettes = {
+            birthday: { bg1: '#fef08a', bg2: '#f97316', text: '#1c1917', pillBg: '#1c1917', pillText: '#fef08a' },
+            holiday:  { bg1: '#14532d', bg2: '#991b1b', text: '#fefce8', pillBg: '#fef08a', pillText: '#14532d' },
+            thinking: { bg1: '#e0f2fe', bg2: '#ddd6fe', text: '#1e293b', pillBg: '#2563eb', pillText: '#ffffff' },
+            thanks:   { bg1: '#fce7f3', bg2: '#fbcfe8', text: '#4a044e', pillBg: '#831843', pillText: '#fdf2f8' }
+        };
+
+        // Ina-update ang preview card habang may binabago ka
+        function renderCard() {
+            const theme = document.getElementById('themeInput').value;
+            const toVal = document.getElementById('toInput').value.trim();
+            const msgVal = document.getElementById('msgInput').value.trim();
+            const fromVal = document.getElementById('fromInput').value.trim();
+
+            const card = document.getElementById('cardPreview');
+            card.className = `card theme-${theme}`;
+
+            document.getElementById('cardBadge').innerText = themeLabels[theme] || 'Greeting Card';
+            document.getElementById('cardTo').innerText = toVal ? `To: ${toVal}` : 'To: Someone Special';
+            document.getElementById('cardMsg').innerText = msgVal || 'Your message goes here...';
+            document.getElementById('cardFrom').innerText = fromVal ? `From: ${fromVal}` : 'From: Your Family';
+        }
+
+        // Binabalik sa simula ang mga input
+        function resetCard() {
+            document.getElementById('themeInput').value = 'birthday';
+            document.getElementById('toInput').value = '';
+            document.getElementById('msgInput').value = 'Wishing you warmth, good health, and plenty of smiles today and always.';
+            document.getElementById('fromInput').value = '';
+            renderCard();
+        }
+
+        // Tumutulong mag-wrap ng mahabang text para hindi lumampas sa gilid ng PNG image
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const paragraphs = text.split('\n');
+            let currentY = y;
+
+            paragraphs.forEach((para) => {
+                const words = para.split(' ');
+                let line = '';
+
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = line + words[i] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && i > 0) {
+                        ctx.fillText(line.trim(), x, currentY);
+                        line = words[i] + ' ';
+                        currentY += lineHeight;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                ctx.fillText(line.trim(), x, currentY);
+                currentY += lineHeight;
+            });
+        }
+
+        // Gumagawa at nagda-download ng PNG file
+        function downloadCardPNG() {
+            const theme = document.getElementById('themeInput').value;
+            const toVal = document.getElementById('toInput').value.trim() || 'Someone Special';
+            const msgVal = document.getElementById('msgInput').value.trim() || 'Your message goes here...';
+            const fromVal = document.getElementById('fromInput').value.trim() || 'Your Family';
+            const badgeText = themeLabels[theme] || 'Greeting Card';
+            const pal = palettes[theme] || palettes.birthday;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 1000;
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, pal.bg1);
+            grad.addColorStop(1, pal.bg2);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Badge box sa taas
+            ctx.fillStyle = pal.pillBg;
+            ctx.beginPath();
+            ctx.roundRect(220, 90, 360, 56, 28);
+            ctx.fill();
+
+            ctx.fillStyle = pal.pillText;
+            ctx.font = 'bold 24px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(badgeText.toUpperCase(), 400, 118);
+
+            // "To" text
+            ctx.fillStyle = pal.text;
+            ctx.font = 'bold 42px system-ui, sans-serif';
+            ctx.fillText(`To: ${toVal}`, 400, 240);
+
+            // Message text sa gitna
+            ctx.font = '500 32px system-ui, sans-serif';
+            wrapText(ctx, msgVal, 400, 390, 640, 48);
+
+            // "From" text sa ibaba
+            ctx.font = '600 28px system-ui, sans-serif';
+            ctx.fillText(`From: ${fromVal}`, 400, 860);
+
+            // Trigger download
+            const link = document.createElement('a');
+            link.download = `ecard-${theme}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
